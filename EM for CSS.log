@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  30 MAR 2015 10:22
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  1 APR 2015 15:43
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -326,7 +326,26 @@ Package caption Info: float package is loaded.
 \c@subfigure=\count114
 \c@subtable=\count115
 )
-(./EM for CSS.aux)
+(./EM for CSS.aux
+
+LaTeX Warning: Label `fig:1a' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:1a' multiply defined.
+
+
+LaTeX Warning: Label `fig:1b' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:1b' multiply defined.
+
+
+LaTeX Warning: Label `fig:1c' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:1c' multiply defined.
+
+)
 \openout1 = `"EM for CSS.aux"'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
@@ -403,100 +422,102 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
 
-{/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-<majority_p(edge=1|obs=1)_advice_shuffles.png, id=9, 578.16pt x 433.62pt>
+{/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2]
+<majority_p(edge=1|obs=1)_advice_shuffles.png, id=16, 578.16pt x 433.62pt>
 File: majority_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 
 <use majority_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: majority_p(edge=1|obs=1)_advice_shuffles.png used on i
-nput line 85.
+nput line 122.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 85--86
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 122--123
  [][] 
  []
 
-<neighbor_p(edge=1|obs=1)_advice_shuffles.png, id=11, 578.16pt x 433.62pt>
+<neighbor_p(edge=1|obs=1)_advice_shuffles.png, id=18, 578.16pt x 433.62pt>
 File: neighbor_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 
 <use neighbor_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: neighbor_p(edge=1|obs=1)_advice_shuffles.png used on i
-nput line 91.
+nput line 128.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 91--92
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 128--129
  [][] 
  []
 
-<block_p(edge=1|obs=1)_advice_shuffles.png, id=12, 578.16pt x 433.62pt>
+<block_p(edge=1|obs=1)_advice_shuffles.png, id=19, 578.16pt x 433.62pt>
 File: block_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 
 <use block_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: block_p(edge=1|obs=1)_advice_shuffles.png used on inpu
-t line 97.
+t line 134.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 97--98
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 134--135
  [][] 
  []
 
 File: majority_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 <use majority_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: majority_p(edge=1|obs=1)_advice_shuffles.png used on i
-nput line 104.
+nput line 141.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 104--105
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 141--142
  [][] 
  []
 
 File: neighbor_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 <use neighbor_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: neighbor_p(edge=1|obs=1)_advice_shuffles.png used on i
-nput line 110.
+nput line 147.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 110--111
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 147--148
  [][] 
  []
 
 File: block_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 <use block_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: block_p(edge=1|obs=1)_advice_shuffles.png used on inpu
-t line 116.
+t line 153.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 116--117
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 153--154
  [][] 
  []
 
-[2] [3 <./majority_p(edge=1|obs=1)_advice_shuffles.png> <./neighbor_p(edge=1|ob
+[3] [4 <./majority_p(edge=1|obs=1)_advice_shuffles.png> <./neighbor_p(edge=1|ob
 s=1)_advice_shuffles.png> <./block_p(edge=1|obs=1)_advice_shuffles.png>]
 (./EM for CSS.aux)
 
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 5683 strings out of 493315
- 87194 string characters out of 6137904
- 182958 words of memory out of 5000000
- 9054 multiletter control sequences out of 15000+600000
- 12368 words of font info for 48 fonts, out of 8000000 for 9000
+ 5712 strings out of 493315
+ 87630 string characters out of 6137904
+ 184958 words of memory out of 5000000
+ 9081 multiletter control sequences out of 15000+600000
+ 13579 words of font info for 52 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 54i,10n,52p,829b,493s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
-></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb>
-</usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></
-usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></us
-r/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/
-local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/loc
-al/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/lo
-cal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on "EM for CSS.pdf" (3 pages, 636357 bytes).
+ 54i,10n,52p,1126b,493s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
+></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb
+></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb>
+</usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+/usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></u
+sr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
+/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/l
+ocal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/loca
+l/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/loc
+al/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on "EM for CSS.pdf" (4 pages, 663591 bytes).
 PDF statistics:
- 53 PDF objects out of 1000 (max. 8388607)
- 33 compressed objects within 1 object stream
+ 64 PDF objects out of 1000 (max. 8388607)
+ 41 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

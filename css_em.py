@@ -4,9 +4,118 @@ import copy
 import pdb
 
 import numpy as np
-from scipy.cluster.vq import kmeans, vq
+#from scipy.cluster.vq import kmeans, vq
 
 import blockmodels as bm
+
+
+def distances(X, Y):
+    """ A replacement for scipy.spatial.distace.cdist(X,Y,"sqeuclidian")
+    """
+    out = np.zeros((len(X), len(Y)))
+    for i in range(len(X)):
+        for j in range(len(Y)):
+            out[i,j] = sum((X[i]-Y[j])**2)
+    return out
+
+# Taken from
+# http://codereview.stackexchange.com/questions/61598/k-mean-with-numpy
+def cluster_centroids(data, clusters, k=None):
+    """Return centroids of clusters in data.
+
+    data is an array of observations with shape (A, B, ...).
+
+    clusters is an array of integers of shape (A,) giving the index
+    (from 0 to k-1) of the cluster to which each observation belongs.
+    The clusters must all be non-empty.
+
+    k is the number of clusters. If omitted, it is deduced from the
+    values in the clusters array.
+
+    The result is an array of shape (k, B, ...) containing the
+    centroid of each cluster.
+
+    >>> data = np.array([[12, 10, 87],
+    ...                  [ 2, 12, 33],
+    ...                  [68, 31, 32],
+    ...                  [88, 13, 66],
+    ...                  [79, 40, 89],
+    ...                  [ 1, 77, 12]])
+    >>> cluster_centroids(data, np.array([1, 1, 2, 2, 0, 1]))
+    array([[ 79.,  40.,  89.],
+           [  5.,  33.,  44.],
+           [ 78.,  22.,  49.]])
+
+    """
+    if k is None:
+        k = np.max(clusters) + 1
+    result = np.zeros((k, len(data[0]))) #empty(shape=(k,) + data.shape[1:])
+    for i in range(k):
+        #print data
+        #print "data[clusters==i]: ", data[clusters==i]
+        #print 'and mean ...', np.mean(data[clusters==i], axis=0)
+        #if np.sum(clusters==i) == 1:
+        #   result[i] = data[clusters==i]
+        #else:
+        out = np.mean(data[clusters == i], axis=0)#, out=result[i])
+        result[i] = out
+    return result
+
+def npkmeans(data, k=None, centroids=None, steps=20):
+    """Divide the observations in data into clusters using the k-means
+    algorithm, and return an array of integers assigning each data
+    point to one of the clusters.
+
+    centroids, if supplied, must be an array giving the initial
+    position of the centroids of each cluster.
+
+    If centroids is omitted, the number k gives the number of clusters
+    and the initial positions of the centroids are selected randomly
+    from the data.
+
+    The k-means algorithm adjusts the centroids iteratively for the
+    given number of steps, or until no further progress can be made.
+
+    >>> data = np.array([[12, 10, 87],
+    ...                  [ 2, 12, 33],
+    ...                  [68, 31, 32],
+    ...                  [88, 13, 66],
+    ...                  [79, 40, 89],
+    ...                  [ 1, 77, 12]])
+    >>> np.random.seed(73)
+    >>> kmeans(data, k=3)
+    array([1, 1, 2, 2, 0, 1])
+
+    """
+    if centroids is not None and k is not None:
+        assert(k == len(centroids))
+    elif centroids is not None:
+        k = len(centroids)
+    elif k is not None:
+        # Forgy initialization method: choose k data points randomly.
+        centroids = data[np.random.choice(np.arange(len(data)), k, False)]
+    else:
+        raise RuntimeError("Need a value for k or centroids.")
+
+    for _ in range(max(steps, 1)):
+        # Squared distances between each point and each centroid.
+        #sqdists = scipy.spatial.distance.cdist(centroids, data, 'sqeuclidean')
+        sqdists = distances(centroids, data).T
+
+        # Index of the closest centroid to each data point.
+        clusters = np.array([np.argmin(sqdists[i]) for i in range(len(sqdists))])#, axis=0)
+        #print 'clusters: ', clusters
+
+        new_centroids = cluster_centroids(data, clusters, k)
+        if np.array_equal(new_centroids, centroids):
+            break
+
+        centroids = new_centroids
+
+    return clusters
+
+
+
 
 def initial_condition(data):
     """Clusters the observation vectors into 'edge' and 'no edge' for G_0.
@@ -20,16 +129,17 @@ def initial_condition(data):
     ########
     # if add:
     #     votes = np.sum(data, axis=0)
-    #     X = np.array([ np.array([votes[i,j]]) for i, j in np.ndindex((N,N))])
+    #     X = np.array([ np.array([votes[i,j]]) for i, j in bm.ndindex((N,N))])
     # else:
-    X = np.array([data[:,i,j] for i, j in np.ndindex((N,N))])
+    X = np.array([data[:,i,j] for i, j in bm.ndindex((N,N))])
     ########
 
-    centers, distortion = kmeans(X, 2)
-    assignments, something = vq(X, centers)
+    #centers, distortion = kmeans(X, 2)
+    #assignments, something = vq(X, centers)
+    assignments = npkmeans(X, 2)
 
     G_hat = np.zeros((N,N))
-    for i, j in np.ndindex((N,N)):
+    for i, j in bm.ndindex((N,N)):
         G_hat[i,j] = assignments[i*N+j]
 
     # It's not clear a-priori if the clusters MEAN 'yes' or 'no,'
@@ -54,7 +164,7 @@ def calculate_likelihood(data, groups, G, n, k):
     Pe0   = np.zeros((k,)*3)
     Pe1   = np.zeros((k,)*3)
 
-    for o_ijk in np.ndindex(data.shape):
+    for o_ijk in bm.ndindex(data.shape):
 
         e = o_ijk[1:]
         B = tuple(groups[list(o_ijk)])
@@ -85,7 +195,7 @@ def calculate_posterior(data, groups, Po1_e, p, N, k):
     Pe0o = np.ones((N,N))
     Pe1o = np.ones((N,N))
 
-    for o_ijk in np.ndindex(data.shape):
+    for o_ijk in bm.ndindex(data.shape):
 
         e = o_ijk[1:]
         B = tuple(groups[list(o_ijk)])
@@ -96,7 +206,7 @@ def calculate_posterior(data, groups, Po1_e, p, N, k):
 
     # print 'before: ', np.mean(Pe1o/(Pe1o+Pe0o) == cf)
 
-    for e in np.ndindex((N,N)):
+    for e in bm.ndindex((N,N)):
 
         B = tuple(groups[list(e)]) # YEAH? This went from 3d->2d blocks ...
         Pe0o[e] *= 1-p[B] # p(e=0)
@@ -118,7 +228,7 @@ def weigh_errors(data, best_guess, groups, k):
     over  = np.zeros((k,)*3) #tuple(k for i in range(3)))
     under = np.zeros((k,)*3) #tuple(k for i in range(3)))
     # Perceiver, Sender, Receiver
-    for p, i, j in np.ndindex(data.shape):
+    for p, i, j in bm.ndindex(data.shape):
         # The Truth (we're assuming)
         t = best_guess[i,j]
         # The Observation
@@ -162,7 +272,7 @@ def count_errors(data_orig, best_guess_orig, groups_orig, k, indices=None):
     fn = np.zeros((k,)*3)
 
     # Perceiver, Sender, Receiver
-    for p, i, j in np.ndindex(data.shape):
+    for p, i, j in bm.ndindex(data.shape):
         # The Truth (we're assuming)
         t = best_guess[i,j]
         # The Observation
@@ -265,7 +375,9 @@ def em(data, k=2, indices=None, G_true=None, num_samples=5, iterations=100, corr
 
     em_iterations = 0
     while True:
-        print "EM iteration #{}".format(em_iterations)
+        sys.stdout.write("EM iteration #{}".format(em_iterations))
+        sys.stdout.flush()
+
         em_iterations += 1
 
         # OR should I do this ... AS THE FULL 3D MODEL?
@@ -281,7 +393,8 @@ def em(data, k=2, indices=None, G_true=None, num_samples=5, iterations=100, corr
                                     iterations=iterations,
                                     corrected=corrected,
                                     indices=indices)
-            return np.round(G), b
+
+            return np.round(G), b, em_iterations
         else:
             G_old = copy.copy(G)
 
@@ -306,7 +419,7 @@ def test_count_errors(n, k, e):
     #x = np.array(x, ndmin=3) # So the indexing over 'perceivers' works right
     x = np.array([x, x]) # in case I want several observers
     # 3) Turn the NUMBERS of errors into actual coordinates
-    edges = list(np.ndindex((n,)*e.ndim))
+    edges = list(bm.ndindex((n,)*e.ndim))
     eix = np.zeros(y.shape, dtype=np.bool)
     for edge in edges:
         # The groups of the nodes involved in the edge ('Group IndeX')
@@ -345,15 +458,17 @@ if __name__ == "__main__":
 
     # all data, idem, consensus, idem, self-reported, idem
     advice, friendship, ca, cf, sa, sf = bm.read_css()
-    X = np.array([cf for i in range(21)])
     # print 'yeah? ', np.all([np.all(cf==X[i]) for i in range(len(X))])
     # raw_input()
     # G_hat, b =  em(X, np.random.randint(2,size=(21,21)), k=2, num_samples=5, iterations=20, corrected=True)
 
+
+    # NOW AGAIN, for advice ... but also KEEP EVERYTHING
     accs = []
     bcf = bm.blockmodel(cf, k=2, corrected=True)
     for num in range(21):
-        G_hat, b = em(friendship[range(num)], k=2, iterations=100, corrected=True)
+        print 'num: ', num
+        G_hat, b, nits = em(friendship[range(num)], k=2, iterations=100, corrected=True)
         accs.append(accuracy(np.round(G_hat), cf))
         print 'accuracy after: ', accuracy(np.round(G_hat), cf)
         print 'bG.p: \n', b.p
@@ -364,6 +479,9 @@ if __name__ == "__main__":
     plt.plot([np.prod(i) for i in accs])
     plt.ylim([-.1,1.1])
     plt.show()
+
+
+
 
 
     # THIS DOESN"T WORK PARTICULARLY WELL

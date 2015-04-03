@@ -16,6 +16,26 @@ import colour
 
 import grouping_distance as gd
 
+
+
+def ndindex(ix):
+    """The same as np.ndindex, but 20% slower. Pypy's numpy doesn't have it.
+    """
+
+    if len(ix)==2:
+        for i in range(ix[0]):
+            for j in range(ix[1]):
+                yield (i,j)
+
+    elif len(ix)==3:
+        for i in range(ix[0]):
+            for j in range(ix[1]):
+                for k in range(ix[2]):
+                    yield (i,j,k)
+
+
+
+
 def color_range(one, two, n):
     """ color_range("red", "blue", 4) gives four colors in six digit hex
 
@@ -91,7 +111,7 @@ def one_round_swaps(b):
 
 
 
-def blockmodel(g_orig, k, iterations=100, corrected=False, indices=[]):
+def blockmodel(g, k, iterations=100, corrected=True, indices=[]):
     """ Takes a graph and a number of clusters, returns group assignments.
 
     g is the graph, a 2- or 3-d binary (NOT boolean) numpy array
@@ -100,7 +120,7 @@ def blockmodel(g_orig, k, iterations=100, corrected=False, indices=[]):
 
     # danger
     # do i need to 1) copy g, or 2) permute the groups
-    g = copy.copy(g_orig)
+    #g = copy.copy(g_orig)
 
     # The indices of the people whose network slices we're seeing
     revert_indices = None
@@ -122,8 +142,8 @@ def blockmodel(g_orig, k, iterations=100, corrected=False, indices=[]):
     models = []
     # Randomly initialized, so try a few times.
     for random_itn in range(iterations):
-        sys.stdout.write('Random start #{}\r'.format(random_itn+1))
-        sys.stdout.flush()
+        #sys.stdout.write('Random start #{}\r'.format(random_itn+1))
+        #sys.stdout.flush()
 
         b = BlockModel(g, k, corrected=corrected)
         models.append(b)
@@ -163,6 +183,9 @@ class BlockModel:
         """Randomly assigns nodes to clusters, and counts inter-cluster ties.
 
         """
+
+        __slots__ = ['g','k','corrected','groups','counts','n','m','kappa','p']
+
         # The graph
         self.g = g
 
@@ -197,7 +220,7 @@ class BlockModel:
 
     def calculate_p(self):
         #Calculate edges/num_possible_edges = m[i,j]/(n[i]*n[j])
-        for ix in np.ndindex(self.m.shape):
+        for ix in ndindex(self.m.shape):
             # If the edge weights stay between 0/1, then this is general.
             possible_edges = np.prod([self.counts[i] for i in ix])
             if possible_edges:
@@ -245,7 +268,7 @@ class BlockModel:
         # For each set of inter-group edges:
         self.kappa = np.zeros((self.g.ndim, self.k)) # RESET!
 
-        for ix in np.ndindex(self.m.shape):
+        for ix in ndindex(self.m.shape):
             # For each group involved in it, and their index
             for i, b in enumerate(ix):
                 # At the group's POSITION in the edge, tally
@@ -255,11 +278,11 @@ class BlockModel:
 
     def calculate_m(self):
 
-        for gix in np.ndindex(self.m.shape):
+        for gix in ndindex(self.m.shape):
             self.m[gix] = 0
 
         #self.m = np.zeros(self.m.shape)
-        for ix in np.ndindex(self.g.shape):
+        for ix in ndindex(self.g.shape):
             gix = tuple(self.groups[list(ix)])
             # Allows for weighted edges, by not adding '1 if edge else 0',
             # but rather 'whatever the value is'
@@ -305,9 +328,9 @@ class BlockModel:
             # The most efficient way I can think of for generating
             # ONLY the indices of edges in which 'i' participates --
             # which are the only relevant ones for updating m.
-            ex = [(i, x, y) for x, y in np.ndindex((self.n, self.n))]
-            ey = [(x, i, y) for x, y in np.ndindex((self.n, self.n))]
-            ez = [(x, y, i) for x, y in np.ndindex((self.n, self.n))]
+            ex = [(i, x, y) for x, y in ndindex((self.n, self.n))]
+            ey = [(x, i, y) for x, y in ndindex((self.n, self.n))]
+            ez = [(x, y, i) for x, y in ndindex((self.n, self.n))]
             # There appeared to be issues with double counting, and getting
             # a unique set simply by sophisticated indexing seemed REALLY
             # tricky in 3D.
@@ -406,7 +429,7 @@ class BlockModel:
 
         total = 0
 
-        for ix in np.ndindex(self.m.shape):
+        for ix in ndindex(self.m.shape):
             if self.m[ix]:
                 total += self.m[ix]*np.log(self.m[ix])
 
@@ -594,7 +617,7 @@ def blocked_matrix(n, k, on=1, off=0, dim=2, corrected=False):
     # For each person ...
     for p in range(n):
         # Look at ALL the edges.
-        for ix in np.ndindex(g.shape):
+        for ix in ndindex(g.shape):
             # Is this edge associated with this person?
             if p in ix:
                 # If so, see if they even CONSIDER flipping for it:
@@ -663,11 +686,11 @@ def read_css():
     ca = np.zeros((n,n))
     cf = np.zeros((n,n))
 
-    for i,j in np.ndindex(ca.shape):
+    for i,j in ndindex(ca.shape):
         if advice[i,i,j] + advice[j,i,j] == 2:
             ca[i,j] = 1
 
-    for i,j in np.ndindex(cf.shape):
+    for i,j in ndindex(cf.shape):
         if friendship[i,i,j] + friendship[j,i,j] == 2:
             cf[i,j] = 1
 
@@ -675,11 +698,11 @@ def read_css():
     sa = np.zeros((n,n))
     sf = np.zeros((n,n))
 
-    for i,j in np.ndindex(sa.shape):
+    for i,j in ndindex(sa.shape):
         if advice[i,i,j] + advice[j,i,j] >= 1:
             sa[i,j] = 1
 
-    for i,j in np.ndindex(sf.shape):
+    for i,j in ndindex(sf.shape):
         if friendship[i,i,j] + friendship[j,i,j] >= 1:
             sf[i,j] = 1
 
@@ -690,7 +713,7 @@ def read_css():
 
 def tweak(i, d, pfp):#, pfn):
 
-    for e in np.ndindex(d.shape):
+    for e in ndindex(d.shape):
 
         gix = (i<10, e[0]<10, e[1]<10)
 
@@ -722,7 +745,7 @@ def generate_model():
 if __name__ == '__main__':
 
     #import pandas as pd
-    from matplotlib import pyplot as plt
+    #from matplotlib import pyplot as plt
 
 
 
@@ -737,6 +760,7 @@ if __name__ == '__main__':
     #a, b, c, d, e, f = read_css()
     #print 'did one'
     #a2, b2, c2, d2, e2, f2 = read_css2()
+    b = blockmodel(cf, 2)
 
     sys.exit()
 
@@ -910,11 +934,11 @@ if __name__ == '__main__':
 #     ca = np.zeros((n,n))
 #     cf = np.zeros((n,n))
 #
-#     for i,j in np.ndindex(ca.shape):
+#     for i,j in ndindex(ca.shape):
 #         if advice[i,i,j] + advice[j,i,j] == 2:
 #             ca[i,j] = 1
 #
-#     for i,j in np.ndindex(cf.shape):
+#     for i,j in ndindex(cf.shape):
 #         if friendship[i,i,j] + friendship[j,i,j] == 2:
 #             cf[i,j] = 1
 #
@@ -922,11 +946,11 @@ if __name__ == '__main__':
 #     sa = np.zeros((n,n))
 #     sf = np.zeros((n,n))
 #
-#     for i,j in np.ndindex(sa.shape):
+#     for i,j in ndindex(sa.shape):
 #         if advice[i,i,j] + advice[j,i,j] >= 1:
 #             sa[i,j] = 1
 #
-#     for i,j in np.ndindex(sf.shape):
+#     for i,j in ndindex(sf.shape):
 #         if friendship[i,i,j] + friendship[j,i,j] >= 1:
 #             sf[i,j] = 1
 #

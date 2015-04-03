@@ -2,9 +2,9 @@
 
 import numpy as np
 
-from r import *
+#from r import *
 # Necessary?
-library('kernlab')
+#library('kernlab')
 
 import blockmodels as bm
 import css_em as em
@@ -73,8 +73,9 @@ def active(data, sample, N, rule):
 def kaboom(data, consensus, iterations=1, rule="familiar"):
     """Does rule-based sample addition (active learning) based on ties.
 
-    Returns lists of group similarity, and of tpr/tnr tuples, using
-    the all-data groups, and consensus graphs as ground truth.
+    Returns lists of group similarity, of tpr/tnr tuples using
+    the all-data groups, and consensus graphs as ground truth, as well as
+    other models
 
     In other words, rather than choosing the next sample randomly as you
     increase N, chooses it based on a 'rule' such as 'who does the current
@@ -83,7 +84,8 @@ def kaboom(data, consensus, iterations=1, rule="familiar"):
     'Rules' include familiar, unfamiliar, popular, and gregarious -- these
     mean the person who has the most MOST relationships WITH the current sample,
     who has the FEWEST, who the sample says RECEIVES the most ties, and who the
-    sample says SENDS the most ties.
+    sample says SENDS the most ties. (And 'random, which should be obvious',
+    and 'linear' which runs the samples in 'order', for stability.)
     """
 
     N = data.shape[1]
@@ -91,14 +93,13 @@ def kaboom(data, consensus, iterations=1, rule="familiar"):
     # Which do I actually want?
     b = bm.blockmodel(consensus, 2, corrected=True, iterations=100)
 
-    groups_all_runs = []
-    accuracy_all_runs = []
+    all_runs = []
+    one_run = []
     for it in range(iterations):
         sample = []
-        groups_one_run = []
-        accuracy_one_run = []
+        one_run = []
         for n in range(1,21+1):
-            print 'On n= ', n
+            #print 'On n= ', n
             #sample = people[0:n]
             if   rule=="familiar":
                 next_person = familiar(data, sample, N, 'most')
@@ -110,33 +111,53 @@ def kaboom(data, consensus, iterations=1, rule="familiar"):
                 next_person = active(data, sample, N, "out")
             elif rule=="linear":
                 next_person = n-1
+            elif rule=="random":
+                left = [i for i in range(N) if not i in sample]
+                next_person = np.random.choice(left)
             else:
                 raise ValueError("Your 'rule' did not match the options.")
 
             sample.append(next_person)
-            print 'sample: ', sample
 
             # Meaning, again, this is doing data-modeling, instead of
             # on the inferred 2d model --- is that right?
             # But HERE, I have to decide how I'm going to classify.
-            G_hat, b_hat = em.em(data[sample], k=2, indices=sample)
+            G_hat, b_hat, nits = em.em(data[sample], k=2, indices=sample)
 
-            ###########################################################
-            # OR, I could just straight up model all the data.
-            # FOR WHICH I WOULD NEED INDICES
-            m = bm.blockmodel(data[sample],#G_hat,
-                                    2, corrected=True,
-                                    iterations=100)#,
-                                    #indices=sample)
-            ###########################################################
+            # Now, a partial 3d modeling for comparison ...
+            m = bm.blockmodel(data[sample], 2, indices=sample)
 
-            score = gd.d2(m.groups, b.groups)
-            groups_one_run.append(score)
-            accuracy_one_run.append(em.accuracy(G_hat >= .5, consensus))
+            # NOW MAKE AND COLLECT ALL THE DATA!
+            inferred_edge_accuracy = em.accuracy(G_hat >= .5, consensus)
+            full_data_groups_distance        = gd.d2(b.groups, m.groups)
+            inferred_network_groups_distance = gd.d2(b.groups, b_hat.groups)
 
-        groups_all_runs.append(groups_one_run)
-        accuracy_all_runs.append(accuracy_one_run)
-    return groups_all_runs, accuracy_all_runs
+            # What am I trying to estimate here?
+            # I DO want to treat consensus as ground truth,
+            # but what are the ground truth groups? The data run on consensus,
+            # or on ALL data? Gotta do both I guess.
+            four_b = em.count_errors(data[sample], consensus, b.groups, 2, indices=sample)
+            pfp_b, pfn_b = em.estimate_error_rates(*four_b)
+            four_n = em.count_errors(data[sample], consensus, m.groups, 2, indices=sample)
+            pfp_n, pfn_n = em.estimate_error_rates(*four_n)
+
+            # And just stick 'em all in the list'
+            one_run.append(sample)
+            one_run.append(inferred_edge_accuracy)
+            one_run.append(full_data_groups_distance)
+            one_run.append(inferred_network_groups_distance)
+            one_run.append(b_hat)
+            one_run.append(nits)
+            one_run.append(m)
+            one_run.append(pfp_b)
+            one_run.append(pfn_b)
+            one_run.append(pfp_n)
+            one_run.append(pfn_n)
+
+        all_runs.append(one_run)
+
+    print 'Finished one KABOOM'
+    return all_runs #groups_all_runs, accuracy_all_runs
 
 
 
@@ -146,13 +167,16 @@ if __name__ == "__main__":
 
     # data, consensus, iterations, rule
 
-    advice_groups_linear, advice_accuracy_linear = kaboom(a, ca, 1, "linear")
-    # advice_groups_fam,   advice_accuracy_fam     = kaboom(a, ca, 1, "familiar")
-    # advice_groups_unfam, advice_accuracy_unfam   = kaboom(a, ca, 1, "unfamiliar")
-    # advice_groups_pop,   advice_accuracy_pop     = kaboom(a, ca, 1, "popular")
-    # advice_groups_greg,  advice_accuracy_greg    = kaboom(a, ca, 1, "gregarious")
+    # advice_groups_linear, advice_accuracy_linear = kaboom(a, ca, 1, "linear")
+    advice_groups_rand,  advice_accuracy_rand    = kaboom(a, ca, 10, "random")
+    advice_groups_fam,   advice_accuracy_fam     = kaboom(a, ca, 10, "familiar")
+    advice_groups_unfam, advice_accuracy_unfam   = kaboom(a, ca, 10, "unfamiliar")
+    advice_groups_pop,   advice_accuracy_pop     = kaboom(a, ca, 10, "popular")
+    advice_groups_greg,  advice_accuracy_greg    = kaboom(a, ca, 10, "gregarious")
 
-    # friends_groups_fam,   friends_accuracy_fam   = kaboom(f, cf, 1, "familiar")
-    # friends_groups_unfam, friends_accuracy_unfam = kaboom(f, cf, 1, "unfamiliar")
-    # friends_groups_pop,   friends_accuracy_pop   = kaboom(f, cf, 1, "popular")
-    # friends_groups_greg,  friends_accuracy_greg  = kaboom(f, cf, 1, "gregarious")
+
+    friends_groups_rand,  friends_accuracy_rand  = kaboom(f, cf, 10, "random")
+    friends_groups_fam,   friends_accuracy_fam   = kaboom(f, cf, 10, "familiar")
+    friends_groups_unfam, friends_accuracy_unfam = kaboom(f, cf, 10, "unfamiliar")
+    friends_groups_pop,   friends_accuracy_pop   = kaboom(f, cf, 10, "popular")
+    friends_groups_greg,  friends_accuracy_greg  = kaboom(f, cf, 10, "gregarious")

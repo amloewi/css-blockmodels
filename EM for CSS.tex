@@ -62,23 +62,25 @@ p( \text{edge} \:|\: \text{observation}) &= \frac{p(e, o)}{p(o)} = \frac{1}{p(o)
 
 
 
-%\begin{algorithm}
-%\caption{The Metropolis Method}
-%\begin{algorithmic}
+\begin{algorithm}
+\caption{The Structure of the EM Procedure}
+\begin{algorithmic}
 %\For{$i = 1$ to num-iterations}
-%\State $j \leftarrow \Call{randomchoice}{1:K}$
-%\State $\theta_{new, j} \gets \theta_{j} + \Call{randomchoice}{[-1, 1]}$ \Comment{As long as it remains in bounds}
-%\State $\theta_{new} \gets \Call{applyconstraint}{\theta, j}$ \Comment{Make $\theta$ non-decreasing, holding $\theta_j$ constant}
-%\If{$\Call{min}{1, \frac{\ell(\theta_{new})}{\ell(\theta)}} > \Call{randomuniform}{[0,1)}$}
-%\State $\theta \gets \theta_{new}$
-%\If{\Call{likelihood}{$\theta$} $>$ \Call{likelihood}{$\theta_{max}$}}
-%\State $\theta_{max} \gets \theta$
-%\EndIf
-%\EndIf
-%\EndFor
-%\State \Call{return}{$	\theta_{max}$}
-%\end{algorithmic}
-%\end{algorithm}
+\State $\hat{G}_0 \gets \Call{init}{X}$
+\While{True}
+	\State $B_n \gets \Call{blockmodel}{\hat{G}_n}$ \Comment{M-step}
+	\State $\hat{G}_{n+1} \gets \Call{posterior}{X, B_n}$ \Comment{E-step}
+	%\State $\theta_{new} \gets \Call{applyconstraint}{\theta, j}$ \Comment{Make $\theta$ non-decreasing, holding $\theta_j$ constant}
+	%\If{$\Call{min}{1, \frac{\ell(\theta_{new})}{\ell(\theta)}} > \Call{randomuniform}{[0,1)}$}
+	%	\State $\theta \gets \theta_{new}$
+	\If{$ \| \hat{G}_n - \hat{G}_{n+1} \| > \epsilon $}
+		\State \Call{break}{}
+	\EndIf
+	%\EndIf
+\EndWhile
+\State \Call{return}{$ \hat{G} $}
+\end{algorithmic}
+\end{algorithm}
 
 
 \section{Three Dimensional Stochastic Block Modeling}

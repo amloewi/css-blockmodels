@@ -1,5 +1,6 @@
 
-
+import datetime
+import pickle
 import numpy as np
 
 #from r import *
@@ -70,7 +71,7 @@ def active(data, sample, N, rule):
 
 
 
-def kaboom(data, consensus, iterations=1, rule="familiar"):
+def kaboom(data, consensus, file, iterations=1, rule="familiar"):
     """Does rule-based sample addition (active learning) based on ties.
 
     Returns lists of group similarity, of tpr/tnr tuples using
@@ -88,17 +89,19 @@ def kaboom(data, consensus, iterations=1, rule="familiar"):
     and 'linear' which runs the samples in 'order', for stability.)
     """
 
+    print 'Started ', file, ' at ', datetime.datetime.now()
+
     N = data.shape[1]
     # THIS IS THE FULL_DATA MODEL -- as opposed to the consensus one.
     # Which do I actually want?
     b = bm.blockmodel(consensus, 2, corrected=True, iterations=100)
 
-    all_runs = []
-    one_run = []
+    all_iterations = []
     for it in range(iterations):
         sample = []
-        one_run = []
+        one_iteration = []
         for n in range(1,21+1):
+            one_sample = {}
             #print 'On n= ', n
             #sample = people[0:n]
             if   rule=="familiar":
@@ -138,26 +141,40 @@ def kaboom(data, consensus, iterations=1, rule="familiar"):
             # or on ALL data? Gotta do both I guess.
             four_b = em.count_errors(data[sample], consensus, b.groups, 2, indices=sample)
             pfp_b, pfn_b = em.estimate_error_rates(*four_b)
-            four_n = em.count_errors(data[sample], consensus, m.groups, 2, indices=sample)
-            pfp_n, pfn_n = em.estimate_error_rates(*four_n)
+            four_m = em.count_errors(data[sample], consensus, m.groups, 2, indices=sample)
+            pfp_m, pfn_m = em.estimate_error_rates(*four_m)
 
-            # And just stick 'em all in the list'
-            one_run.append(sample)
-            one_run.append(inferred_edge_accuracy)
-            one_run.append(full_data_groups_distance)
-            one_run.append(inferred_network_groups_distance)
-            one_run.append(b_hat)
-            one_run.append(nits)
-            one_run.append(m)
-            one_run.append(pfp_b)
-            one_run.append(pfn_b)
-            one_run.append(pfp_n)
-            one_run.append(pfn_n)
+            # And just stick 'em all in the list. (Casting, first, to
+            # traditional python lists, because otherwise they're PYPY arrays,
+            # not even NUMpy arrays, and so can't be used in the same script as
+            # matplotlib -- which is the whole point of collecting this data.)
+            one_sample['sample'] = sample
+            one_sample['edge_accuracy'] = inferred_edge_accuracy
+            one_sample['full_groups_accuracy'] = full_data_groups_distance
+            one_sample['g_hat_groups_accuracy'] = inferred_network_groups_distance
+            one_sample['em_iterations'] = nits
 
-        all_runs.append(one_run)
+            one_sample['b_hat_p'] = b_hat.p.tolist()
+            one_sample['full_data_p'] = m.p.tolist()
+
+            one_sample['b_groups_pfp'] = pfp_b.tolist()
+            one_sample['b_groups_pfn'] = pfn_b.tolist()
+
+            one_sample['full_groups_pfp'] = pfp_m.tolist()
+            one_sample['full_groups_pfn'] = pfn_m.tolist()
+
+            one_iteration.append(one_sample)
+
+        all_iterations.append(one_iteration)
 
     print 'Finished one KABOOM'
-    return all_runs #groups_all_runs, accuracy_all_runs
+    print 'Finished ', file, ' at ', datetime.datetime.now()
+
+    f = open(file, 'wb')
+    pickle.dump(all_iterations, f)
+    f.close()
+
+    #return all_runs #groups_all_runs, accuracy_all_runs
 
 
 

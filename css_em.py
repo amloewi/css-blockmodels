@@ -49,15 +49,17 @@ def cluster_centroids(data, clusters, k=None):
     """
     if k is None:
         k = np.max(clusters) + 1
+
     result = np.zeros((k, len(data[0]))) #empty(shape=(k,) + data.shape[1:])
     for i in range(k):
         #print data
-        #print "data[clusters==i]: ", data[clusters==i]
+        #print "data[clusters=={}]: {}\n".format(i, data[clusters==i])
         #print 'and mean ...', np.mean(data[clusters==i], axis=0)
         #if np.sum(clusters==i) == 1:
         #   result[i] = data[clusters==i]
         #else:
         out = np.mean(data[clusters == i], axis=0)#, out=result[i])
+        #print 'out', out
         result[i] = out
     return result
 
@@ -87,32 +89,42 @@ def npkmeans(data, k=None, centroids=None, steps=20):
     array([1, 1, 2, 2, 0, 1])
 
     """
-    if centroids is not None and k is not None:
-        assert(k == len(centroids))
-    elif centroids is not None:
-        k = len(centroids)
-    elif k is not None:
-        # Forgy initialization method: choose k data points randomly.
-        centroids = data[np.random.choice(np.arange(len(data)), k, False)]
-    else:
-        raise RuntimeError("Need a value for k or centroids.")
+    while True:
 
-    for _ in range(max(steps, 1)):
-        # Squared distances between each point and each centroid.
-        #sqdists = scipy.spatial.distance.cdist(centroids, data, 'sqeuclidean')
-        sqdists = distances(centroids, data).T
+        if centroids is not None and k is not None:
+            assert(k == len(centroids))
+        elif centroids is not None:
+            k = len(centroids)
+        elif k is not None:
+            # Forgy initialization method: choose k data points randomly.
+            centroids = data[np.random.choice(np.arange(len(data)), k, False)]
+        else:
+            raise RuntimeError("Need a value for k or centroids.")
 
-        # Index of the closest centroid to each data point.
-        clusters = np.array([np.argmin(sqdists[i]) for i in range(len(sqdists))])#, axis=0)
-        #print 'clusters: ', clusters
+        for _ in range(max(steps, 1)):
+            # Squared distances between each point and each centroid.
+            #sqdists = scipy.spatial.distance.cdist(centroids, data, 'sqeuclidean')
+            #print 'sqdists 1: ', sqdists
+            sqdists = distances(centroids, data).T
+            #print 'sqdists 2: ', sqdists
 
-        new_centroids = cluster_centroids(data, clusters, k)
-        if np.array_equal(new_centroids, centroids):
-            break
+            # Index of the closest centroid to each data point.
+            clusters = np.array([np.argmin(sqdists[i]) for i in range(len(sqdists))])#, axis=0)
+            #print 'clusters: ', clusters
 
-        centroids = new_centroids
 
-    return clusters
+            new_centroids = cluster_centroids(data, clusters, k)
+            if np.array_equal(new_centroids, centroids):
+                break
+
+            centroids = new_centroids
+
+        #print clusters
+        if np.all(clusters[0]==clusters):
+            # THIS IS ABSOLUTELY NECESSARY
+            centroids = data[np.random.choice(np.arange(len(data)), k, False)]
+        else:
+            return clusters
 
 
 
@@ -375,7 +387,7 @@ def em(data, k=2, indices=None, G_true=None, num_samples=5, iterations=100, corr
 
     em_iterations = 0
     while True:
-        sys.stdout.write("EM iteration #{}".format(em_iterations))
+        sys.stdout.write("EM iteration #{} \r".format(em_iterations))
         sys.stdout.flush()
 
         em_iterations += 1

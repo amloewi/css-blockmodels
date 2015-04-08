@@ -1,6 +1,7 @@
 
 import datetime
-import pickle
+#import pickle
+import json
 import numpy as np
 
 #from r import *
@@ -150,8 +151,9 @@ def kaboom(data, consensus, file, iterations=1, rule="familiar"):
             # matplotlib -- which is the whole point of collecting this data.)
             one_sample['sample'] = sample
             one_sample['edge_accuracy'] = inferred_edge_accuracy
-            one_sample['full_groups_accuracy'] = full_data_groups_distance
-            one_sample['g_hat_groups_accuracy'] = inferred_network_groups_distance
+            # These are already floats, but PYPY floats -- not Cpython. Trust me.
+            one_sample['full_groups_accuracy'] = float(full_data_groups_distance)
+            one_sample['g_hat_groups_accuracy'] = float(inferred_network_groups_distance)
             one_sample['em_iterations'] = nits
 
             one_sample['b_hat_p'] = b_hat.p.tolist()
@@ -171,7 +173,8 @@ def kaboom(data, consensus, file, iterations=1, rule="familiar"):
     print 'Finished ', file, ' at ', datetime.datetime.now()
 
     f = open(file, 'wb')
-    pickle.dump(all_iterations, f)
+    #pickle.dump(all_iterations, f)
+    json.dump(all_iterations, f)
     f.close()
 
     #return all_runs #groups_all_runs, accuracy_all_runs

@@ -36,7 +36,7 @@ To demonstrate their utility, these methods are tested on several famous dataset
 
 \section{Modeling Cognitive Social Structures}
 
-
+As we go about modeling this data, there are two primary concerns -- what features of the data are we trying to describe, and what network models exist that are amenable to these features?
 
 \subsection{The Correlates of Error in Cognitive Social Structures}
 Network perceptions are interesting precisely because of their errors, and so in order to understand them, it is vital to model this error. The most common statistically specified error process is a completely random one, which in this case would mean that every person had an equal and fixed chance of misperceiving an edge. Both intuitively and empirically however, this process fails to capture several important features of the observed errors.
@@ -44,6 +44,7 @@ Network perceptions are interesting precisely because of their errors, and so in
 Perhaps most predictably, people are more accurate when it comes to perceiving relationships that are ``close'' to them socially. In other words, you are more likely to accurately perceive one of your own relationships, or one of your friend's, than of two people you never talk to. Another consistent source of error is that people are not equally likely to make false positive and false negative errors. Overall, there is a significantly greater tendency to fail to observe an existing relationship (commit a false negative) than there is to imagine one that doesn't exist (commit a false positive). The last consistent finding is that individuals have very different error rates from one another -- beyond the effects of distance and omission/commission biases, people appear to have a personal tendency to accurately perceive relationships or not, and this tendency might be very different from someone else's. Again, this is not surprising -- everyone knows someone who just has difficulty reading social situations -- but the degree to which this can be observed in the data is important to emphasize.
 
 \subsection{Blockmodels of Cognitive Social Structures}
+With the desire to use models that are well established and understood, there are just a few broad classes of network models to choose from. These are Exponential Random Graph Models (ERGMs), Stochastic Block Models (SBMs) and Latent Space Models (LSMs) -- the latter two of which have also been further generalized into the single category of Conditional Independence Models (CID models). 
 
 
 
@@ -73,7 +74,7 @@ p( \text{edge} \:|\: \text{observation}) &= \frac{p(e, o)}{p(o)} = \frac{1}{p(o)
 	%\State $\theta_{new} \gets \Call{applyconstraint}{\theta, j}$ \Comment{Make $\theta$ non-decreasing, holding $\theta_j$ constant}
 	%\If{$\Call{min}{1, \frac{\ell(\theta_{new})}{\ell(\theta)}} > \Call{randomuniform}{[0,1)}$}
 	%	\State $\theta \gets \theta_{new}$
-	\If{$ \| \hat{G}_n - \hat{G}_{n+1} \| > \epsilon $}
+	\If{$ \| \hat{G}_n - \hat{G}_{n+1} \| < \epsilon $}
 		\State \Call{break}{}
 	\EndIf
 	%\EndIf

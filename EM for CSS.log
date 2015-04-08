@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  1 APR 2015 15:43
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  5 APR 2015 22:45
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -423,69 +423,69 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 
 {/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2]
-<majority_p(edge=1|obs=1)_advice_shuffles.png, id=16, 578.16pt x 433.62pt>
+<majority_p(edge=1|obs=1)_advice_shuffles.png, id=14, 578.16pt x 433.62pt>
 File: majority_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 
 <use majority_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: majority_p(edge=1|obs=1)_advice_shuffles.png used on i
-nput line 122.
+nput line 123.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 122--123
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 123--124
  [][] 
  []
 
-<neighbor_p(edge=1|obs=1)_advice_shuffles.png, id=18, 578.16pt x 433.62pt>
+<neighbor_p(edge=1|obs=1)_advice_shuffles.png, id=16, 578.16pt x 433.62pt>
 File: neighbor_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 
 <use neighbor_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: neighbor_p(edge=1|obs=1)_advice_shuffles.png used on i
-nput line 128.
+nput line 129.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 128--129
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 129--130
  [][] 
  []
 
-<block_p(edge=1|obs=1)_advice_shuffles.png, id=19, 578.16pt x 433.62pt>
+<block_p(edge=1|obs=1)_advice_shuffles.png, id=17, 578.16pt x 433.62pt>
 File: block_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 
 <use block_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: block_p(edge=1|obs=1)_advice_shuffles.png used on inpu
-t line 134.
+t line 135.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 134--135
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 135--136
  [][] 
  []
 
 File: majority_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 <use majority_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: majority_p(edge=1|obs=1)_advice_shuffles.png used on i
-nput line 141.
+nput line 142.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 141--142
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 142--143
  [][] 
  []
 
 File: neighbor_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 <use neighbor_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: neighbor_p(edge=1|obs=1)_advice_shuffles.png used on i
-nput line 147.
+nput line 148.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 147--148
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 148--149
  [][] 
  []
 
 File: block_p(edge=1|obs=1)_advice_shuffles.png Graphic file (type png)
 <use block_p(edge=1|obs=1)_advice_shuffles.png>
 Package pdftex.def Info: block_p(edge=1|obs=1)_advice_shuffles.png used on inpu
-t line 153.
+t line 154.
 (pdftex.def)             Requested size: 144.53964pt x 108.40472pt.
 
-Overfull \hbox (15.53696pt too wide) in paragraph at lines 153--154
+Overfull \hbox (15.53696pt too wide) in paragraph at lines 154--155
  [][] 
  []
 
@@ -514,7 +514,7 @@ sr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
 ocal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/loca
 l/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/loc
 al/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on "EM for CSS.pdf" (4 pages, 663591 bytes).
+Output written on "EM for CSS.pdf" (4 pages, 664263 bytes).
 PDF statistics:
  64 PDF objects out of 1000 (max. 8388607)
  41 compressed objects within 1 object stream

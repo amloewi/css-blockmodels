@@ -39,13 +39,14 @@ def d2(x, y):
 if __name__ == '__main__':
 
     from matplotlib import pyplot as plt
+    import blockmodels as bm
 
-    diffs = []
-    for i in range(100):
-        x = np.random.randint(0, 2, size=20)
-        y = np.random.randint(0, 2, size=20)
+    a, f, ca, cf, sa, sf = bm.read_css()
 
-        diffs.append(d1(x,y)-d2(x,y))
-
-    plt.hist(diffs)
-    plt.show()
+    comps = []
+    gt = bm.blockmodel(f, 2)
+    for i in range(1,21+1):
+        b = bm.blockmodel(f[range(i)], 2)
+        comps.append(d2(gt.groups, b.groups))
+    plt.plot(comps)
+    bm.show()

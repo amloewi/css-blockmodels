@@ -14,12 +14,59 @@ import networkx as nx
 import pygraphviz as gv
 import colour
 
+# This is for the kmeans stuff -- which I kinda think
+# should be in HERE. Also, I don't WANT to have
+# em import bm and bm import em ... but
+# I'm not SURE what damage it might do.
+# It's just for function availability -- there's nothing
+# mutable in danger, I don't think.
+import npkmeans as km
+#import css_em as em
 import grouping_distance as gd
 
 
+def initial_condition(data):
+    """Clusters the observation vectors into 'edge' and 'no edge' for G_0.
+
+    Treats each length-m observation vector as data point -- clusters all the
+    vectors using kmeans with k=2, then assigns each G_hat value based on the
+    cluster assignment.
+    """
+    N = data.shape[1]
+
+    ########
+    # if add:
+    #     votes = np.sum(data, axis=0)
+    #     X = np.array([ np.array([votes[i,j]]) for i, j in bm.ndindex((N,N))])
+    # else:
+    X = np.array([data[:,i,j] for i, j in ndindex((N,N))])
+    ########
+
+    #centers, distortion = kmeans(X, 2)
+    #assignments, something = vq(X, centers)
+    assignments = km.npkmeans(X, 2)
+
+    G_hat = np.zeros((N,N))
+    for i, j in ndindex((N,N)):
+        G_hat[i,j] = assignments[i*N+j]
+
+    # It's not clear a-priori if the clusters MEAN 'yes' or 'no,'
+    # so try both, and see which is closer to taking the mean value. Yeah?
+    G_hat_prime = (1-G_hat)**2
+
+    d1 = np.sum(np.abs(G_hat - np.mean(data, axis=0)))
+    d2 = np.sum(np.abs(G_hat_prime - np.mean(data, axis=0)))
+
+    if d1 < d2:
+        return G_hat
+    else:
+        return G_hat_prime
 
 def ndindex(ix):
-    """The same as np.ndindex, but 20% slower. Pypy's numpy doesn't have it.
+    """The same as np.ndindex, but only works for 2 and 3-d indices
+
+    (But who uses more?) Also 20% slower. Pypy's numpy doesn't have this,
+    which is why it needed to be hand-rolled.
     """
 
     if len(ix)==2:
@@ -104,23 +151,19 @@ def one_round_swaps(b):
         b.set_group(best_groups)
 
         # Return the likelihood corresponding to the groups
-        return new_max[mx] #b.calculate_likelihood()
+        return new_max[mx]
     else:
         # The groups don't change.
         return new_max[0]
 
 
 
-def blockmodel(g, k, iterations=100, corrected=True, indices=[]):
+def blockmodel(g, k, iterations=20, corrected=True, indices=[]):
     """ Takes a graph and a number of clusters, returns group assignments.
 
     g is the graph, a 2- or 3-d binary (NOT boolean) numpy array
     Right now, treats the network as 1-mode, so there's only 1 k.
     """
-
-    # danger
-    # do i need to 1) copy g, or 2) permute the groups
-    #g = copy.copy(g_orig)
 
     # The indices of the people whose network slices we're seeing
     revert_indices = None
@@ -137,7 +180,6 @@ def blockmodel(g, k, iterations=100, corrected=True, indices=[]):
 
 
 
-
     likelihoods = []
     models = []
     # Randomly initialized, so try a few times.
@@ -145,7 +187,7 @@ def blockmodel(g, k, iterations=100, corrected=True, indices=[]):
         #sys.stdout.write('Random start #{}\r'.format(random_itn+1))
         #sys.stdout.flush()
 
-        b = BlockModel(g, k, corrected=corrected)
+        b = BlockModel(g, k, corrected=corrected)#, kmeans=kmeans)
         models.append(b)
 
         lkhds = []
@@ -160,26 +202,32 @@ def blockmodel(g, k, iterations=100, corrected=True, indices=[]):
             lkhds.append(new_likelihood)
 
             # How many rounds should EACH START take to converge?
-            if abs(new_likelihood-old_likelihood)<1e-1 or convergence_itn>50:
+            if abs(new_likelihood-old_likelihood)<1e-2:# or convergence_itn>100:
 
                 likelihoods.append(new_likelihood)
+                plt.plot(lkhds)
                 break
             else:
                 old_likelihood = new_likelihood
 
     model = models[likelihoods.index(max(likelihoods))]
 
+    # DANGER --
     if not revert_indices is None:
         model.groups = model.groups[revert_indices]
-        model.g = model.g[:,revert_indices,:]
-        model.g = model.g[:,:,revert_indices]
+        if model.g.ndim==3:
+            model.g = model.g[:,revert_indices,:]
+            model.g = model.g[:,:,revert_indices]
+        else:
+            model.g = model.g[revert_indices]
+            model.g = model.g[revert_indices,:]
 
-    return model
+    return model, likelihoods
 
 
 class BlockModel:
 
-    def __init__(self, g, k, corrected=False):
+    def __init__(self, g, k, corrected=False):#, kmeans=True):
         """Randomly assigns nodes to clusters, and counts inter-cluster ties.
 
         """
@@ -197,6 +245,18 @@ class BlockModel:
 
         # An array of cluster assignments for each node
         # g.shape[ONE] because we might have 2 < D < 3
+
+        # WE CAN DO BETTER THAN THIS -- kmeans on the rows
+        # it's 2d ... kmeans on the OUTPUT of 'initial_condition'
+        # when it's 3d. right.
+        # if kmeans:
+        #     if g.ndim==3:
+        #         ic = initial_condition(g)
+        #         clusters = km.npkmeans(ic, 2)
+        #     else:
+        #         clusters = km.npkmeans(g, 2)
+        #         self.groups = clusters #
+        # else:
         self.groups = np.random.randint(k, size=g.shape[1])
 
         # The number of nodes in each group -- indexed by group-id.
@@ -227,10 +287,6 @@ class BlockModel:
                 self.p[ix] = float(self.m[ix])/possible_edges
             else:
                 self.p[ix] = 0
-        # HOW STUPID AM I !?!
-        # self.p = self.m/np.sum(self.m)
-        # Renormalizing, because of edges < 1. (Right?)
-        # self.p = self.p/np.sum(self.p)
 
 
     def calculate_kappa(self):

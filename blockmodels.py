@@ -205,7 +205,7 @@ def blockmodel(g, k, iterations=20, corrected=True, indices=[]):
             if abs(new_likelihood-old_likelihood)<1e-2:# or convergence_itn>100:
 
                 likelihoods.append(new_likelihood)
-                plt.plot(lkhds)
+                #plt.plot(lkhds)
                 break
             else:
                 old_likelihood = new_likelihood

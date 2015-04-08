@@ -104,7 +104,7 @@ def npkmeans(data, k=None, centroids=None, steps=20):
             all_clusters.append(clusters)
 
             # Find the total loss for the clustering
-            ssd = np.sum([sum((centroids[clusters[i]] - data[i])**2) for i in range(len(data))]))
+            ssd = np.sum([sum((centroids[clusters[i]] - data[i])**2) for i in range(len(data))])
             all_ssd.append(ssd)
 
             new_centroids = cluster_centroids(data, clusters, k)

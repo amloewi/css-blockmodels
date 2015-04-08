@@ -48,8 +48,10 @@ def calculate_likelihood(data, groups, G, n, k):
     # replace them as 0?
     for i in [0,1]:
         likelihood[i][np.isnan(likelihood[i])] = np.mean(likelihood[i][~np.isnan(likelihood[i])])
-        #.5 # DANGER: What do I use?
-        likelihood[i][counts[i] == 0] = np.mean(likelihood[i][counts[i]!=0])
+        # Smoothing -- an attempt.
+        likelihood[i][likelihood[i] < .1] = 0.1
+        likelihood[i][likelihood[i] > .9] = 0.9
+        #likelihood[i][counts[i] == 0] = np.mean(likelihood[i][counts[i]!=0])
         #.1 # Pseudocounts, for no data
         # OR, should it be -- um, the average for the accuracy of the OTHER
         # observed groups? Probably a better guess.
@@ -88,8 +90,35 @@ def calculate_posterior(data, groups, Po1_e, p, N, k):
         POe0[e] *= (1-p[B]) # p(e=0)
         POe1[e] *=    p[B]  # p(e=1)
 
+    #print "POe0: ", np.mean(POe0)
+    #print "POe1: ", np.mean(POe1)
+    #print 'likelihood[0]: \n', likelihood[0]
+    #print 'likelihood[1]: \n', likelihood[1]
     # p(e=1|O) = p(e=1,O)/sum_e(p(e=?,O)) = p(e=1,O)/(p(e=1,O) + p(e=0,O))
     return POe1/(POe1 + POe0)
+
+    # POe0 = np.zeros((N,N)) # p(O,e=0)
+    # POe1 = np.zeros((N,N)) # p(O,e=1)
+    #
+    # for o_ijk in bm.ndindex(data.shape):
+    #
+    #     e = o_ijk[1:]
+    #     B = tuple(groups[list(o_ijk)])
+    #     # p(O|e=0)  p(o_ijk=1 | e=0 ; B)            p(o_ijk=0 | e=0 ; B)
+    #     POe0[e] += np.log(Po1_e[0][B]) if data[o_ijk] else np.log(1-Po1_e[0][B])
+    #     # p(O|e=1)  p(o_ijk=1 | e=1 ; B)            p(o_ijk=0 | e=1 ; B)
+    #     POe1[e] += np.log(Po1_e[1][B]) if data[o_ijk] else np.log(1-Po1_e[1][B])
+    #
+    # for e in bm.ndindex((N,N)):
+    #
+    #     # p(e=1,O) = p(O|e=1)*p(e=1)
+    #     B = tuple(groups[list(e)]) # YEAH? This went from 3d->2d blocks ...
+    #     POe0[e] += np.log(1-p[B]) # p(e=0)
+    #     POe1[e] += np.log(  p[B]) # p(e=1)
+    #
+    # # p(e=1|O) = p(e=1,O)/sum_e(p(e=?,O)) = p(e=1,O)/(p(e=1,O) + p(e=0,O))
+    # #return POe1/(POe1 + POe0)
+    # return 1/(np.exp(POe0 - POe1) + 1)
 
 
 
@@ -356,7 +385,7 @@ def test_estimate_error_rates():
 def test_guess():
     pass
 
-def faulty_observations(indices=None, N=20):
+def faulty_observations(indices=None, N=20, simple=True):
     # CONCOCT: ... some cases for the likelihood/posterior TO WHICH I know
     # the answers. So ... Ah -- so -- DRAW from them. Directly. Right.
     # I want ... p(e|o) AND p(o|e) ... etc. Right. And for NOW, have it be ONE
@@ -364,9 +393,9 @@ def faulty_observations(indices=None, N=20):
     # p(o=1|e=1) = .9 #, .8 for groups 1, 2.  (NO -)
 
     if not indices:
-        indices = range(10)
+        indices = range(0,20,2)
 
-    truth = bm.blocked_matrix(N, 2, on=1, off=.1) # => .9. .1 b/c diagonal
+    truth = bm.blocked_matrix(N, 2, on=.9, off=.1) # => ~.8 .1 b/c diagonal
     groups = np.zeros(N)
     groups[10:] = 1
 
@@ -387,14 +416,17 @@ def faulty_observations(indices=None, N=20):
     # generate data
     for i in indices:#range(10):
         obs = copy.copy(truth)
-        for ix in bm.ndindex((N,N)):
-            B = tuple(groups[[i, ix[0], ix[1]]])
-            if obs[ix]:
-                if np.random.random() < pfn[B]:
-                    obs[ix] = 0
-            else:
-                if np.random.random() < pfp[B]:
-                    obs[ix] = 1
+        if simple:
+            obs = bm.blocked_matrix(N,2)
+        else:
+            for ix in bm.ndindex((N,N)):
+                B = tuple(groups[[i, ix[0], ix[1]]])
+                if obs[ix]:
+                    if np.random.random() < pfn[B]:
+                        obs[ix] = 0
+                else:
+                    if np.random.random() < pfp[B]:
+                        obs[ix] = 1
         all_obs.append(obs)
 
     return np.array(all_obs), pfp, pfn, truth, groups
@@ -409,6 +441,8 @@ def permute(x, indices):
         x = x[:,:,indices]
     return x
 
+def test_posterior():
+    pass
 
 if __name__ == "__main__":
 
@@ -424,6 +458,14 @@ if __name__ == "__main__":
     # print 'yeah? ', np.all([np.all(cf==X[i]) for i in range(len(X))])
     # raw_input()
     # G_hat, b =  em(X, np.random.randint(2,size=(21,21)), k=2, num_samples=5, iterations=20, corrected=True)
+
+    Y, pfp, pfn, truth, y_groups = faulty_observations(indices=range(20), simple=False)
+    likelihood = calculate_likelihood(Y, y_groups, truth, 20, 2)
+    p = np.array([[.8,.1],[.1,.8]])
+    posterior  = calculate_posterior(Y, y_groups, likelihood, p, 20, 2)
+    #print 'posterior: \n', np.int64(np.round(posterior))
+    #sys.exit()
+
 
     X_true = bm.blocked_matrix(20, 2, on=.9, off=.1)
     X  = [bm.blocked_matrix(20, 2, on=1., off=0.) for i in range(10)]
@@ -456,13 +498,14 @@ if __name__ == "__main__":
     #cfb.plot()
 
 
-    pfp_star, pfn_star = estimate_error_rates(f_con[indices], cf_con, cfb.groups, 2, indices=indices)
-    graph, model, est_diffs, true_diffs, em_lkhds, accs, group_diffs, values, est_groups, probs, liks, modliks, models = em(f_con[indices], k=2, G_true=cf_con, iterations=100, indices=indices, corrected=False)#X, G_true=bm.blocked_matrix(20,2))#, iterations=100)
-    pfp_hat, pfn_hat = estimate_error_rates(f_con[indices], graph, est_groups[-1], 2, indices=indices)
+    # pfp_star, pfn_star = estimate_error_rates(f_con[indices], cf_con, cfb.groups, 2, indices=indices)
+    # graph, model, est_diffs, true_diffs, em_lkhds, accs, group_diffs, values, est_groups, probs, liks, modliks, models = em(f_con[indices], k=2, G_true=cf_con, iterations=100, indices=indices, corrected=False)#X, G_true=bm.blocked_matrix(20,2))#, iterations=100)
+    # pfp_hat, pfn_hat = estimate_error_rates(f_con[indices], graph, est_groups[-1], 2, indices=indices)
 
-    # pfp_star, pfn_star = estimate_error_rates(advice[indices], ca, cab.groups, 2, indices=indices)
-    # graph, model, est_diffs, true_diffs, em_lkhds, accs, group_diffs, values, est_groups, probs, liks, modliks = em(advice[indices], k=2, G_true=ca, iterations=100, indices=indices)#X, G_true=bm.blocked_matrix(20,2))#, iterations=100)
-    # pfp_hat, pfn_hat = estimate_error_rates(advice[indices], graph, est_groups[-1], 2, indices=indices)
+    pfp_star, pfn_star = estimate_error_rates(advice[indices], ca, cab.groups, 2, indices=indices)
+    #graph, model, est_diffs, true_diffs, em_lkhds, accs, group_diffs, values, est_groups, probs, liks, modliks, models 
+    stuff = em(advice[indices], k=2, G_true=ca, iterations=100, indices=indices)#X, G_true=bm.blocked_matrix(20,2))#, iterations=100)
+    pfp_hat, pfn_hat = estimate_error_rates(advice[indices], graph, est_groups[-1], 2, indices=indices)
 
     # pfp_star, pfn_star = estimate_error_rates(Y, truth, y_groups, 2, indices=indices)
     # graph, model, est_diffs, true_diffs, em_lkhds, accs, group_diffs, values, est_groups, probs, liks = em(Y[indices], G_true=truth, indices=indices, iterations=100)#, iterations=100)
